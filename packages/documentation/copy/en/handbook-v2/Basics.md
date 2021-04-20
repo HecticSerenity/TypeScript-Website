@@ -256,7 +256,7 @@ function greet(person, date) {
 greet("Brendan");
 ```
 
-If we run `tsc hello.ts` again, notice that we get an error on the command line!
+If we run `tsc hello.ts` again, notice that `tsc` displays an error in the console output!
 
 ```txt
 Expected 2 arguments, but got 1.
