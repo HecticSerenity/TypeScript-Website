@@ -18,20 +18,20 @@ If `padding` is a `string`, it should just prepend `padding` to `input`.
 Let's try to implement the logic for when `padLeft` is passed a `number` for `padding`.
 
 ```ts twoslash
-// @errors: 2365
+// @errors: 2345
 function padLeft(padding: number | string, input: string) {
-  return new Array(padding + 1).join(" ") + input;
+  return " ".repeat(padding) + input;
 }
 ```
 
-Uh-oh, we're getting an error on `padding + 1`.
-TypeScript is warning us that adding a `number` to a `number | string` might not give us what we want, and it's right.
+Uh-oh, we're getting an error on `padding`.
+TypeScript is warning us that adding a `number | string` to a `number` might not give us what we want, and it's right.
 In other words, we haven't explicitly checked if `padding` is a `number` first, nor are we handling the case where it's a `string`, so let's do exactly that.
 
 ```ts twoslash
 function padLeft(padding: number | string, input: string) {
   if (typeof padding === "number") {
-    return new Array(padding + 1).join(" ") + input;
+    return " ".repeat(padding) + input;
   }
   return padding + input;
 }
@@ -52,8 +52,8 @@ In many editors we can observe these types as they change, and we'll even do so 
 ```ts twoslash
 function padLeft(padding: number | string, input: string) {
   if (typeof padding === "number") {
-    return new Array(padding + 1).join(" ") + input;
-    //               ^?
+    return " ".repeat(padding) + input;
+    //                ^?
   }
   return padding + input;
   //     ^?
@@ -110,7 +110,7 @@ This might be a good segue into what we'll call "truthiness" checking.
 
 Truthiness might not be a word you'll find in the dictionary, but it's very much something you'll hear about in JavaScript.
 
-In JavaScript, we can use any expression in conditionals, `&&`s, `||`s, `if` statements, and Boolean negations (`!`), and more.
+In JavaScript, we can use any expression in conditionals, `&&`s, `||`s, `if` statements, Boolean negations (`!`), and more.
 As an example, `if` statements don't expect their condition to always have the type `boolean`.
 
 ```ts twoslash
@@ -133,12 +133,12 @@ Values like
 - `undefined`
 
 all coerce to `false`, and other values get coerced `true`.
-You can always coerce values to `boolean`s by running them through the `Boolean` function, or by using the shorter double-Boolean negation.
+You can always coerce values to `boolean`s by running them through the `Boolean` function, or by using the shorter double-Boolean negation. (The latter has the advantage that TypeScript infers a narrow literal boolean type `true`, while inferring the first as type `boolean`.)
 
 ```ts twoslash
 // both of these result in 'true'
-Boolean("hello");
-!!"world";
+Boolean("hello"); // type: boolean, value: true
+!!"world"; // type: true,    value: true
 ```
 
 It's fairly popular to leverage this behavior, especially for guarding against values like `null` or `undefined`.
@@ -271,6 +271,46 @@ function multiplyValue(container: Container, factor: number) {
 }
 ```
 
+## The `in` operator narrowing
+
+JavaScript has an operator for determining if an object has a property with a name: the `in` operator.
+TypeScript takes this into account as a way to narrow down potential types.
+
+For example, with the code: `"value" in x`. where `"value"` is a string literal and `x` is a union type.
+The "true" branch narrows `x`'s types which have either an optional or required property `value`, and the "false" branch narrows to types which have an optional or missing property `value`.
+
+```ts twoslash
+type Fish = { swim: () => void };
+type Bird = { fly: () => void };
+
+function move(animal: Fish | Bird) {
+  if ("swim" in animal) {
+    return animal.swim();
+  }
+
+  return animal.fly();
+}
+```
+
+To reiterate optional properties will exist in both sides for narrowing, for example a human could both swim and fly (with the right equipment) and thus should show up in both sides of the `in` check:
+
+<!-- prettier-ignore -->
+```ts twoslash
+type Fish = { swim: () => void };
+type Bird = { fly: () => void };
+type Human = { swim?: () => void; fly?: () => void };
+
+function move(animal: Fish | Bird | Human) {
+  if ("swim" in animal) {
+    animal;
+//  ^?
+  } else {
+    animal;
+//  ^?
+  }
+}
+```
+
 ## `instanceof` narrowing
 
 JavaScript has an operator for checking whether or not a value is an "instance" of another value.
@@ -336,7 +376,7 @@ For example
 ```ts twoslash
 function padLeft(padding: number | string, input: string) {
   if (typeof padding === "number") {
-    return new Array(padding + 1).join(" ") + input;
+    return " ".repeat(padding) + input;
   }
   return padding + input;
 }
@@ -445,7 +485,7 @@ Most of the examples we've looked at so far have focused around narrowing single
 While this is common, most of the time in JavaScript we'll be dealing with slightly more complex structures.
 
 For some motivation, let's imagine we're trying to encode shapes like circles and squares.
-Circles keep track of their radii and squares keep track of their side lengths.
+Circles keep track of their radiuses and squares keep track of their side lengths.
 We'll use a field called `kind` to tell which shape we're dealing with.
 Here's a first attempt at defining `Shape`.
 
@@ -496,7 +536,7 @@ function getArea(shape: Shape) {
 
 <!-- TODO -->
 
-Under `strictNullChecks` that gives us an error - which is appropriate since `radius` might not be defined.
+Under [`strictNullChecks`](/tsconfig#strictNullChecks) that gives us an error - which is appropriate since `radius` might not be defined.
 But what if we perform the appropriate checks on the `kind` property?
 
 ```ts twoslash
@@ -536,7 +576,7 @@ function getArea(shape: Shape) {
 
 But this doesn't feel ideal.
 We had to shout a bit at the type-checker with those non-null assertions (`!`) to convince it that `shape.radius` was defined, but those assertions are error-prone if we start to move code around.
-Additionally, outside of `strictNullChecks` we're able to accidentally access any of those fields anyway (since optional properties are just assumed to always be present when reading them).
+Additionally, outside of [`strictNullChecks`](/tsconfig#strictNullChecks) we're able to accidentally access any of those fields anyway (since optional properties are just assumed to always be present when reading them).
 We can definitely do better.
 
 The problem with this encoding of `Shape` is that the type-checker doesn't have any way to know whether or not `radius` or `sideLength` are present based on the `kind` property.
@@ -582,9 +622,9 @@ function getArea(shape: Shape) {
 ```
 
 Like with our first definition of `Shape`, this is still an error.
-When `radius` was optional, we got an error (only in `strictNullChecks`) because TypeScript couldn't tell whether the property was present.
+When `radius` was optional, we got an error (with [`strictNullChecks`](/tsconfig#strictNullChecks) enabled) because TypeScript couldn't tell whether the property was present.
 Now that `Shape` is a union, TypeScript is telling us that `shape` might be a `Square`, and `Square`s don't have `radius` defined on them!
-Both interpretations are correct, but only does our new encoding of `Shape` still cause an error outside of `strictNullChecks`.
+Both interpretations are correct, but only the union encoding of `Shape` will cause an error regardless of how [`strictNullChecks`](/tsconfig#strictNullChecks) is configured.
 
 But what if we tried checking the `kind` property again?
 

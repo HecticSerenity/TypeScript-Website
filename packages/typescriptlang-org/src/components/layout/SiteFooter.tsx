@@ -10,6 +10,7 @@ import { Customize } from "./SiteFooter-Customize"
 export type Props = {
   lang: string
   suppressCustomization?: true
+  suppressDocRecommendations?: true
 }
 
 const popularPages = [
@@ -121,10 +122,6 @@ const communityLinks = [
     url: "https://stackoverflow.com/questions/tagged/typescript",
   },
   {
-    title: "Web Updates",
-    url: "https://github.com/microsoft/TypeScript-Website/issues/130",
-  },
-  {
     title: "Web Repo",
     url: "https://github.com/microsoft/TypeScript-Website",
   },
@@ -215,22 +212,24 @@ export const SiteFooter = (props: Props) => {
     })
   }, [])
 
-
+  const hideDocs = props.suppressDocRecommendations
   return (
     <footer id="site-footer" role="contentinfo">
       {props.suppressCustomization ? null : <Customize />}
 
-      <section id="popular">
-        <h3>Popular Documentation Pages</h3>
-        <ul>
-          {popularPages.map(page => (
-            <li key={page.url}>
-              <Link to={page.url}>{page.title}</Link>
-              <p>{page.description}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {hideDocs ? null  :
+        <section id="popular">
+          <h3>Popular Documentation Pages</h3>
+          <ul>
+            {popularPages.map(page => (
+              <li key={page.url}>
+                <Link to={page.url}>{page.title}</Link>
+                <p>{page.description}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      }
 
       <section id="community">
         <article id="logos">
@@ -270,7 +269,7 @@ export const SiteFooter = (props: Props) => {
               id="microsoft-logo"
               width={92}
               height={19}
-              src={require("../../assets/microsoft-logo.png")}
+              src={require("../../assets/microsoft-logo.png").default}
               alt="Microsoft Logo"
             />
           </a>

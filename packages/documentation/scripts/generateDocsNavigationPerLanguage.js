@@ -52,6 +52,7 @@ const handbookPages = [
       { file: "handbook-v2/Object Types.md" },
       {
         title: "Type Manipulation",
+        chronological: true,
         items: [
           { file: "handbook-v2/Type Manipulation/_Creating Types from Types.md" },
           { file: "handbook-v2/Type Manipulation/Generics.md" },
@@ -71,14 +72,19 @@ const handbookPages = [
     title: "Reference",
     summary: "Deep dive reference materials.",
     items: [
-      // { file: "reference/Advanced Types.md" },
       { file: "reference/Utility Types.md" },
+      {
+        href: "/cheatsheets",
+        title: "Cheat Sheets",
+        oneliner: "Syntax overviews for common code"
+      },
       { file: "reference/Decorators.md" },
       { file: "reference/Declaration Merging.md" },
       { file: "reference/Enums.md" },
       { file: "reference/Iterators and Generators.md" },
       { file: "reference/JSX.md" },
       { file: "reference/Mixins.md" },
+      { file: "reference/ESM Support for Node.md" },
       { file: "reference/Modules.md" },
       { file: "reference/Module Resolution.md" },
       { file: "reference/Namespaces.md" },
@@ -199,6 +205,17 @@ for (const lang of langs) {
 
 const codeForTheHandbook = [
   `
+  /* This function is completely auto-generated via the \`yarn bootstrap\` phase of
+  the app. You can re-run it when adding new localized handbook pages by running:
+
+  yarn workspace documentation create-handbook-nav
+
+  Find the source of truth at packages/documentation/scripts/generateDocsNavigationPerLanguage.js
+*/
+
+import type { SidebarNavItem } from "./documentationNavigationUtils"
+
+
 export function getDocumentationNavForLanguage(langRequest: string): SidebarNavItem[] {
   const langs = ['${langs.join("', '")}']
   const lang = langs.includes(langRequest) ? langRequest : "en"
@@ -241,6 +258,7 @@ for (const lang of langs) {
             title: "${subItem.title}",
             id: "${toID(sectionIndex, subItem.title)}",
             oneline: "${subItem.oneliner}",
+            chronological: ${subItem.chronological || false},
           `);
           addItems(subItem);
           codeForTheHandbook.push(",");
@@ -287,18 +305,7 @@ codeForTheHandbook.push(`
 
 // prettier-ignore
 const pathToFileWeEdit = join(__dirname, "..", "..", "typescriptlang-org", "src", "lib", "documentationNavigation.ts");
-const startMarker = "/** ---INSERT--- */";
-const endMarker = "/** ---INSERT-END--- */";
-const oldCode = readFileSync(pathToFileWeEdit, "utf8");
-const newCode =
-  oldCode.split(startMarker)[0] +
-  startMarker +
-  "\n\n" +
-  codeForTheHandbook.join("\n") +
-  "\n\n" +
-  endMarker +
-  oldCode.split(endMarker)[1];
-
+const newCode = "\n\n" + codeForTheHandbook.join("\n") + "\n\n";
 writeFileSync(
   pathToFileWeEdit,
   format(newCode, { filepath: pathToFileWeEdit })
@@ -312,6 +319,7 @@ writeFileSync(
  * @property {string= } href - a language prefixless
  * @property {string= } title - the display only used when href exists
  * @property {string= } oneliner
+ * @property {boolean=} chronological - should we recommend a next/prev
  */
 
 /**

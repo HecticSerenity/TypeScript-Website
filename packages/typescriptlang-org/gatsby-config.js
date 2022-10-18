@@ -14,15 +14,9 @@ if (process.env.BOOTSTRAPPING) {
 
 require("./scripts/ensureDepsAreBuilt")
 
-const path = require.resolve("./../../watcher")
-require(path)
-
 // https://github.com/gatsbyjs/gatsby/issues/1457
 require("ts-node").register({ files: true })
 const { join } = require("path")
-
-// prettier-ignore
-const shiki = join(require.resolve(`gatsby-remark-shiki-twoslash`), "..", "..", "package.json")
 
 module.exports = {
   siteMetadata: {
@@ -71,8 +65,8 @@ module.exports = {
     {
       resolve: `gatsby-plugin-sitemap`,
       options: {
-        // Skip handbook v2 frmo appearing in search
-        exclude: [`*/2/*`, `*/glossary`, `*/vo/*`],
+        // Skip handbook v2 from appearing in search
+        excludes: [`*/glossary`, `*/vo/*`],
       },
     },
     // Lets you edit the head from inside a react tree
@@ -123,6 +117,13 @@ module.exports = {
       },
     },
     {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        path: `${__dirname}/../playground-handbook/copy`,
+        name: `playground-handbook`,
+      },
+    },
+    {
       resolve: "gatsby-plugin-i18n",
       options: {
         langKeyDefault: "en",
@@ -150,9 +151,10 @@ module.exports = {
           },
           "gatsby-remark-autolink-headers",
           {
-            resolve: shiki,
+            resolve: "gatsby-remark-shiki-twoslash",
             options: {
               theme: require("./lib/themes/typescript-beta-light.json"),
+              addTryButton: true,
             },
           },
           "gatsby-remark-copy-linked-files",

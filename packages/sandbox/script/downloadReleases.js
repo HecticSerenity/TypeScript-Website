@@ -22,7 +22,7 @@ const go = async () => {
   const possibleBeta = `${latestStable.split(".")[0]}.${Number(latestStable.split(".")[1]) + 1}.0-beta`
   const addBeta = preReleases.data.versions.includes(possibleBeta)
 
-  const possibleRc = `${latestStable.split(".")[0]}.${Number(latestStable.split(".")[1]) + 1}.0-rc`
+  const possibleRc = `${latestStable.split(".")[0]}.${Number(latestStable.split(".")[1]) + 1}.1-rc`
   const addRc = preReleases.data.versions.includes(possibleRc)
 
   // Get the highest maj/min ignoring patch versions
@@ -52,7 +52,7 @@ export const supportedReleases = ["${supportedVersions.join('", "')}"] as const
 /** A type of all versions **/
 export type ReleaseVersions = "${[possibleBeta, possibleRc, ...versions].join('" | "')}"
 `
-  const path = join(__dirname, "..", "src", "releases.ts")
+  const path = join(__dirname, "..", "src", "release_data.ts")
   writeFileSync(path, format(code, { filepath: path }), "utf8")
 
   const jsonPath = join(__dirname, "..", "src", "releases.json")

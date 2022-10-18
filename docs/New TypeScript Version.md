@@ -20,6 +20,8 @@ That will update all of the site to use 3.9.0 for building. Run `yarn build` to 
 
 You might see issues with yarn patching TypeScript, if so, try run: `yarn set version latest` first to update to the latest yarn.
 
+Then empty the twoslash cache: `rm node_modules/.cache/twoslash`.
+
 ##### New Handbook Docs
 
 You might have a new reference doc to add, they live in [`packages/documentation/copy`](https://github.com/microsoft/TypeScript-website/blob/v2/packages/documentation/copy). You can ignore languages other than `en`. The folder structure is only for your reference and has no bearing on the site navigation. Each markdown document needs a header like:
@@ -34,6 +36,12 @@ oneline: "Step one in learning TypeScript: The basic types."
 ```
 
 Or the site will fail the build. Once that file is ready, add it to the sidebar via the file [`packages/documentation/scripts/generateDocsNavigationPerLanguage.js`](https://github.com/microsoft/TypeScript-website/blob/v2/packages/documentation/scripts/generateDocsNavigationPerLanguage.js).
+
+### JSON Schema Updates
+
+The source of truth for the JSON Schema is https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/tsconfig.json
+
+To download a copy of that into our repo to handle new PRs sent to it in-between TS releases, run: `node ./node_modules/.bin/ts-node packages/tsconfig-reference/scripts/schema/downloadSchemaBase.ts`
 
 ##### TSConfig Reference
 
@@ -86,25 +94,6 @@ oneline: TypeScript 3.9 Release Notes
 You can add twoslash to the code samples if you want.
 
 When you're happy with that, then edit [`packages/documentation/copy/en/release-notes/Overview.md](https://github.com/microsoft/TypeScript-website/blob/v2/packages/documentation/copy/en/release-notes/Overview.md) to include the changes you just added, and simplify descriptions.
-
-##### Index
-
-The homepage keeps track of upcoming dates via this file: [`packages/typescriptlang-org/src/lib/release-plan.json`](https://github.com/microsoft/TypeScript-website/blob/v2/packages/typescriptlang-org/src/lib/release-plan.json)
-
-```json
-{
-  "_format": "mm/dd/yyyy - these get put into new Date()",
-  "upcoming_version": "3.9",
-  "iteration_plan_url": "https://github.com/microsoft/TypeScript/issues/37198",
-  "last_release_date": "02/20/2020",
-  "upcoming_beta_date": "03/20/2020",
-  "upcoming_rc_date": "04/24/2020",
-  "upcoming_release_date": "05/12/2020"
-}
-```
-
-You might not have these dates yet, at the current release (it took about a week last time to get the dates) - leaving
-this is fine and the site will accommodate the dates not being ready yet.
 
 ##### Update Schema Store
 
